@@ -2,25 +2,27 @@ package oauth
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"net/http"
+	"github.com/owen-gxz/douyin-sdk/util"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type RefreshTokenResponse struct {
 	TokenResponse
 }
 type TokenResponse struct {
-	ErrorCode    int    `json:"error_code"`
-	Description  string `json:"description"`
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
-	OpenID       string `json:"open_id"`
-	Scope        string `json:"scope"`
+	Message string `json:"message"`
+	Data    struct {
+		ErrorCode    int    `json:"error_code"`
+		Description  string `json:"description"`
+		AccessToken  string `json:"access_token"`
+		ExpiresIn    int64  `json:"expires_in"`
+		RefreshToken string `json:"refresh_token"`
+		OpenID       string `json:"open_id"`
+		Scope        string `json:"scope"`
+	} `json:"data"`
 }
 
 var (
@@ -53,21 +55,13 @@ func (c *Config) Token(code string) (*TokenResponse, error) {
 		buf.WriteByte('?')
 	}
 	buf.WriteString(v.Encode())
-	result, err := http.DefaultClient.Get(buf.String())
+	resp := &TokenResponse{}
+	err := util.Get2Response(buf.String(), resp)
 	if err != nil {
 		return nil, err
 	}
-	response, err := ioutil.ReadAll(result.Body)
-	if err != nil {
-		return nil, err
-	}
-	resp := TokenResponse{}
-	err = json.Unmarshal(response, &resp)
-	if err != nil {
-		return nil, err
-
-	}
-	return &resp, nil
+	resp.Data.ExpiresIn = time.Now().Unix() + resp.Data.ExpiresIn
+	return resp, nil
 }
 
 func (c *Config) RefreshToken(refreshToken string) (*RefreshTokenResponse, error) {
@@ -88,19 +82,11 @@ func (c *Config) RefreshToken(refreshToken string) (*RefreshTokenResponse, error
 		buf.WriteByte('?')
 	}
 	buf.WriteString(v.Encode())
-	result, err := http.DefaultClient.Get(buf.String())
+	resp := &RefreshTokenResponse{}
+	err := util.Get2Response(buf.String(), resp)
 	if err != nil {
 		return nil, err
 	}
-	response, err := ioutil.ReadAll(result.Body)
-	if err != nil {
-		return nil, err
-	}
-	resp := RefreshTokenResponse{}
-	err = json.Unmarshal(response, &resp)
-	if err != nil {
-		return nil, err
-
-	}
-	return &resp, nil
+	resp.Data.ExpiresIn = time.Now().Unix() + resp.Data.ExpiresIn
+	return resp, nil
 }

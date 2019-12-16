@@ -20,7 +20,7 @@ const (
 	ScopeIm           = "im"            //给抖音用户发送消息  --- 上传素材
 )
 
-func GetUserAllScope() string {
+func GetUserScope() string {
 	scopes := []string{ScopeUserInfo, ScopeFansList, ScopeFollowingList, ScopeFansData}
 	return strings.Join(scopes, ",")
 }
@@ -36,6 +36,6 @@ func GetInteractScope() string {
 }
 
 func GetAllScope() string {
-	scopes := []string{GetInteractScope(), GetVideoScope(), GetUserAllScope()}
+	scopes := []string{GetInteractScope(), GetVideoScope(), GetUserScope()}
 	return strings.Join(scopes, ",")
 }

@@ -18,18 +18,22 @@ type Config struct {
 	RedirectURL string
 
 	// Scope specifies optional requested permissions.
-	Scopes []string
+	Scopes string
 }
 type Endpoint struct {
-	AuthURL         string
-	TokenURL        string
+	// oauth url
+	AuthURL string
+	// token url
+	TokenURL string
+	// Refresh Token URL
 	RefreshTokenURL string
-	ClientTokenURL  string
+	// client token url
+	ClientTokenURL string
 }
 
 func (c *Config) AuthCodeURL(state string) string {
 	var buf bytes.Buffer
-	buf.WriteString(c.Endpoint.ClientTokenURL)
+	buf.WriteString(c.Endpoint.AuthURL)
 	v := url.Values{
 		"response_type": {responseTypeCode},
 		"client_key":    {c.ClientKey},
@@ -38,7 +42,7 @@ func (c *Config) AuthCodeURL(state string) string {
 		v.Set("redirect_uri", c.RedirectURL)
 	}
 	if len(c.Scopes) > 0 {
-		v.Set("scope", strings.Join(c.Scopes, " "))
+		v.Set("scope", c.Scopes)
 	}
 	if state != "" {
 		// TODO(light): Docs say never to omit state; don't allow empty.
@@ -52,4 +56,3 @@ func (c *Config) AuthCodeURL(state string) string {
 	buf.WriteString(v.Encode())
 	return buf.String()
 }
-

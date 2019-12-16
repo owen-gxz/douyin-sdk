@@ -1,15 +1,12 @@
-package dy_sdk
+package service
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/owen-gxz/dy-sdk/oauth"
-	"io/ioutil"
-	"net/http"
+	"github.com/owen-gxz/douyin-sdk/oauth"
+	"github.com/owen-gxz/douyin-sdk/util"
 	"net/url"
-	"strings"
 	"sync"
 	"time"
 )
@@ -18,7 +15,9 @@ type Service struct {
 	*oauth.Config
 
 	clientToken *AccessToken
-	sync.Mutex    // accessToken读取锁
+	sync.Mutex  // accessToken读取锁
+
+	handlers map[string]WebHookFunc
 }
 
 const (
@@ -35,6 +34,9 @@ type AccessToken struct {
 func NewService(conf *oauth.Config) *Service {
 	s := &Service{
 		Config: conf,
+	}
+	if s.handlers == nil {
+		s.handlers = make(map[string]WebHookFunc)
 	}
 	err := s.getClientToken()
 	if err != nil {
@@ -71,22 +73,10 @@ func (s Service) getClientToken() error {
 		"client_key":    {s.ClientKey},
 		"client_secret": {s.ClientSecret},
 	}
-	if strings.Contains(s.Endpoint.ClientTokenURL, "?") {
-		buf.WriteByte('&')
-	} else {
-		buf.WriteByte('?')
-	}
+	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
-	result, err := http.DefaultClient.Get(buf.String())
-	if err != nil {
-		return err
-	}
-	response, err := ioutil.ReadAll(result.Body)
-	if err != nil {
-		return err
-	}
-	resp := AccessToken{}
-	err = json.Unmarshal(response, &resp)
+	resp := &AccessToken{}
+	err := util.Get2Response(buf.String(), resp)
 	if err != nil {
 		return err
 	}
@@ -94,6 +84,10 @@ func (s Service) getClientToken() error {
 		return errors.New(fmt.Sprintf("error_code:%d ,msg: %s", resp.ErrorCode, resp.Description))
 	}
 	resp.ExpiresIn = time.Now().Unix() + resp.ExpiresIn - 3
-	s.clientToken = &resp
+	s.clientToken = resp
 	return nil
+}
+
+type AccessTokenServer interface {
+	GetToken(openid string) (token string, err error)
 }
