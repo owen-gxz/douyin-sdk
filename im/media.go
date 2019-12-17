@@ -60,7 +60,6 @@ func MediaUpload(accountToken, openID string, fileData []byte) (*MediaUploadResp
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	vr := &MediaUploadResponse{}
 	err = json.Unmarshal(data, vr)
 	if err != nil {

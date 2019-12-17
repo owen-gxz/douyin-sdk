@@ -72,7 +72,6 @@ func VideoUpload(accountToken, openID string, fileData []byte) (*VideoUploadResp
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	vr := &VideoUploadResponse{}
 	err = json.Unmarshal(data, vr)
 	if err != nil {
@@ -120,7 +119,6 @@ func VideoCreate(accountToken, openID string, req VideoCreateReq) (*ResourceCrea
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	err = util.Post2Response(buf.String(), bytes.NewReader(data), resp)
 	if err != nil {
 		return nil, err

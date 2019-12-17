@@ -2,14 +2,12 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 )
 
 func Get2Response(url string, resp interface{}) error {
-	fmt.Println(url)
 	result, err := http.DefaultClient.Get(url)
 	if err != nil {
 		return err
@@ -18,7 +16,6 @@ func Get2Response(url string, resp interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(response))
 	err = json.Unmarshal(response, &resp)
 	if err != nil {
 		return err
@@ -35,7 +32,6 @@ func Post2Response(url string, body io.Reader, resp interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("response data: ", string(response), result.StatusCode)
 	err = json.Unmarshal(response, &resp)
 	if err != nil {
 		return err

@@ -66,7 +66,6 @@ func ImageUpload(accountToken, openID string, fileData []byte) (*imageUploadResp
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	ir := &imageUploadResponse{}
 	err = json.Unmarshal(data, ir)
 	if err != nil {
@@ -122,7 +121,6 @@ func ImageCreate(accountToken, openID string, req ImageCreateReq) (*ResourceCrea
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	err = util.Post2Response(buf.String(), bytes.NewReader(data), resp)
 	if err != nil {
 		return nil, err

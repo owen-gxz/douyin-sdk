@@ -47,7 +47,6 @@ func (s Service) CallBack(req *http.Request, resp http.ResponseWriter) {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(string(data))
 	if !s.SignValid(req.Header.Get(DouYinSignHeader), data) {
 		fmt.Println("sign error")
 		return
@@ -57,13 +56,11 @@ func (s Service) CallBack(req *http.Request, resp http.ResponseWriter) {
 		vwr := VerifyWebhookRequest{}
 		err = json.Unmarshal(data, &vwr)
 		if err != nil {
-			fmt.Println(46, err.Error())
 			resp.Write([]byte(err.Error()))
 			return
 		}
 		respData, err := json.Marshal(&vwr.Content)
 		if err != nil {
-			fmt.Println(52, err.Error())
 			resp.Write([]byte(err.Error()))
 			return
 		}
@@ -82,7 +79,6 @@ func (s Service) SignValid(sign string, data []byte) bool {
 	sh1.Write([]byte(fmt.Sprintf("%s%s", s.ClientSecret, string(data))))
 	vsign := sh1.Sum(nil)
 	signStr := fmt.Sprintf("%x", vsign)
-	fmt.Println(sign, signStr)
 	if signStr != sign {
 		return false
 	}
