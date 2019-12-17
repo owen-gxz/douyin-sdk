@@ -3,6 +3,7 @@ package im
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/owen-gxz/douyin-sdk/util"
 	"github.com/rs/xid"
@@ -66,4 +67,28 @@ func MediaUpload(accountToken, openID string, fileData []byte) (*MediaUploadResp
 		return nil, err
 	}
 	return vr, nil
+}
+
+// 发送图片消息
+func SendImageMessage(accountToken, openID, toUser string, fileData []byte) error {
+	mu, err := MediaUpload(accountToken, openID, fileData)
+	if err != nil {
+		return err
+	}
+	if mu.Data.ErrorCode != 0 {
+		return errors.New(mu.Data.Description)
+	}
+	message := MessageReq{
+		ToUserID:    toUser,
+		MessageType: MessageTypeImage,
+		Content:     mu.Data.Media.MediaID,
+	}
+	senResp, err := SendMessage(accountToken, openID, message)
+	if err != nil {
+		return err
+	}
+	if senResp.Data.ErrorCode != 0 {
+		return errors.New(senResp.Data.Description)
+	}
+	return nil
 }
