@@ -38,13 +38,11 @@ const (
 )
 
 func main() {
-	//Client Key: awkvwzgrynjwmp9p
-	//Client Secret: 67d9780917bf23e257564074ddcf6889
 	scopes := []string{oauth.GetAllScope()}
 	ac := oauth.Config{
 		ClientKey:    "ClientKey",
 		ClientSecret: "ClientSecret",
-		RedirectURL:  "https://wechat-qy.bmyuer.club/douyin/callback",
+		RedirectURL:  "https://xxx.xx.xxx",
 		Scopes:       strings.Join(scopes, ","),
 		Endpoint: struct {
 			AuthURL         string
