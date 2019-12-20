@@ -215,11 +215,7 @@ func GetVideosInfo(accountToken, openID string, itemIDs []string) (*VideoInfoRes
 		"access_token": {accountToken},
 		"open_id":      {openID},
 	}
-	if strings.Contains(videoInfoUrl, "?") {
-		buf.WriteByte('&')
-	} else {
-		buf.WriteByte('?')
-	}
+	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
 	req := VideoItemReq{itemIDs}
 	data, err := json.Marshal(req)
@@ -242,24 +238,21 @@ type RemoveVideoResponse struct {
 }
 
 //删除多视频
-func RemoveVideos(accountToken, openID string, itemIDs []string) (*RemoveVideoResponse, error) {
+func RemoveVideo(accountToken, openID string, itemID string) (*RemoveVideoResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(videoDeleteUrl)
 	v := url.Values{
 		"access_token": {accountToken},
 		"open_id":      {openID},
 	}
-	if strings.Contains(videoDeleteUrl, "?") {
-		buf.WriteByte('&')
-	} else {
-		buf.WriteByte('?')
-	}
+	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
-	req := VideoItemReq{itemIDs}
-	data, err := json.Marshal(req)
+	req := map[string]interface{}{"item_id": itemID}
+	data, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(string(data))
 	resp := &RemoveVideoResponse{}
 	err = util.Post2Response(buf.String(), bytes.NewReader(data), resp)
 	if err != nil {

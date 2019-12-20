@@ -128,8 +128,14 @@ type VideoCommentTopResponse struct {
 	} `json:"data"`
 }
 
+type VideoCommentTopRequest struct {
+	CommentID string `json:"comment_id"`
+	ItemID    string `json:"item_id"`
+	top       *bool  `json:"top"`
+}
+
 // 置顶视频评论(企业号)
-func VideoCommentTop(accountToken, openID string, reply ComentReq) (*VideoCommentTopResponse, error) {
+func VideoCommentTop(accountToken, openID string, reply VideoCommentTopRequest) (*VideoCommentTopResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(videoCommentTopUrl)
 	v := url.Values{
