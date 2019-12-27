@@ -174,7 +174,7 @@ type LeadsTagListResponse struct {
 }
 
 // 获取标签列表
-func LeadsTagList(accountToken, openID string, cursor, count int) (*LeadsTagListResponse, error) {
+func LeadsTagList(accountToken, openID string, cursor, count int64) (*LeadsTagListResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(leadsTagListUrl)
 	v := url.Values{
@@ -204,7 +204,7 @@ type LeadsTagUserListResponse struct {
 }
 
 // 获取标签用户列表
-func LeadsTagUserList(accountToken, openID string, cursor, count, tagID int) (*LeadsTagUserListResponse, error) {
+func LeadsTagUserList(accountToken, openID string, cursor, count, tagID int64) (*LeadsTagUserListResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(leadsTagUserListUrl)
 	v := url.Values{
@@ -266,7 +266,7 @@ type LeadsTagUpdateResponse struct {
 }
 
 //更新标签
-func LeadsTagUpdate(accountToken, openID string, name string, id int) (*LeadsTagUpdateResponse, error) {
+func LeadsTagUpdate(accountToken, openID string, name string, id int64) (*LeadsTagUpdateResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(leadsTagUpdateUrl)
 	v := url.Values{
@@ -297,7 +297,7 @@ type LeadsTagDeleteResponse struct {
 }
 
 //删除标签
-func LeadsTagDelete(accountToken, openID string, id int) (*LeadsTagDeleteResponse, error) {
+func LeadsTagDelete(accountToken, openID string, id int64) (*LeadsTagDeleteResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(leadsTagDeleteUrl)
 	v := url.Values{
@@ -327,8 +327,14 @@ type LeadsTagUserUpdateResponse struct {
 	} `json:"data"`
 }
 
+type LeadsTagUserUpdateRequest struct {
+	TagID  int64  `json:"tag_id"`
+	UserID string `json:"user_id"`
+	Bind   *bool   `json:"bind"`
+}
+
 //删除标签
-func LeadsTagUserUpdate(accountToken, openID string, tagID int, userID string, bind bool) (*LeadsTagUserUpdateResponse, error) {
+func LeadsTagUserUpdate(accountToken, openID string, tag LeadsTagUserUpdateRequest) (*LeadsTagUserUpdateResponse, error) {
 	var buf bytes.Buffer
 	buf.WriteString(leadsTagUserUpdateUrl)
 	v := url.Values{
@@ -337,7 +343,6 @@ func LeadsTagUserUpdate(accountToken, openID string, tagID int, userID string, b
 	}
 	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
-	tag := map[string]interface{}{"tag_id": tagID, "user_id": userID, "bind": bind}
 	data, err := json.Marshal(&tag)
 	if err != nil {
 		return nil, err
