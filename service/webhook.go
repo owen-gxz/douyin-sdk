@@ -41,7 +41,7 @@ func (s *Service) AddHandle(event string, fc WebHookFunc) {
 	s.handlers[event] = fc
 }
 
-func (s Service) CallBack(req *http.Request, resp http.ResponseWriter) {
+func (s Service) WebHook(req *http.Request, resp http.ResponseWriter) {
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Println(err.Error())
