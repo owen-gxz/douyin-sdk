@@ -154,7 +154,6 @@ type VideoPartCompleteResponse struct {
 // 上传完成
 func VideoPartComplete(accountToken, openID string, uploadID string) (*VideoPartCompleteResponse, error) {
 	var buf bytes.Buffer
-	fmt.Println(uploadID)
 	buf.WriteString(videoPartCompleteUrl)
 	v := url.Values{
 		"access_token": {accountToken},
