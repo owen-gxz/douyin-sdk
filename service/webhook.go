@@ -24,6 +24,7 @@ const (
 	WebHookVerifyEvent      = "verify_webhook"
 	CreateVideoEvent        = "create_video"
 	AuthorizeEvent          = "authorize"
+	UnAuthorizeEvent        = "unauthorize"
 	ReceiveMsgEvent         = "receive_msg"
 	EnterImEvent            = "enter_im"
 	DialPhoneEvent          = "dial_phone"
@@ -173,5 +174,3 @@ func (data HookReq) CreateVideoRequest() *CreateVideoRequest {
 	}
 	return &req
 }
-
-
