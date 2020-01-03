@@ -21,6 +21,8 @@ var (
 	videoPartCompleteUrl = fmt.Sprintf("%s/video/part/complete/", util.ServiceUrl)
 	// 建议最小视频为5M
 	minPartSize = 5 * 1024 * 1024
+
+	fileSize2SmallError = errors.New("File minimum must not be less than 5M")
 )
 
 type VideoPartInitResponse struct {
@@ -46,7 +48,6 @@ func VideoPartInit(accountToken, openID string) (*VideoPartInitResponse, error) 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("upid:", resp.Data.UploadID)
 	return resp, nil
 }
 
@@ -60,7 +61,7 @@ type VideoPartUploadResponse struct {
 // 分片上传
 func VideoPartUpload(accountToken, openID string, uploadID string, fileData []byte) (error) {
 	var buf bytes.Buffer
-	buf.WriteString(videoUploadUrl)
+	buf.WriteString(videoPartUploadUrl)
 	v := url.Values{
 		"access_token": {accountToken},
 		"open_id":      {openID},
@@ -69,21 +70,18 @@ func VideoPartUpload(accountToken, openID string, uploadID string, fileData []by
 	buf.WriteByte('?')
 	var partNum = 0
 	if len(fileData) < minPartSize {
-		partNum = 1
+		return fileSize2SmallError
 	} else {
-		partNum = int(math.Ceil(float64(len(fileData)) / float64(minPartSize)))
+		partNum = int(math.Floor(float64(len(fileData)) / float64(minPartSize)))
 	}
-	fmt.Println("分块数量：", partNum)
 	index := 0
 	errorChain := make(chan error)
 	done := make(chan int)
 	for {
 		var fd []byte
 		if index+1 == partNum {
-			fmt.Println(index)
 			fd = fileData[index*minPartSize:]
 		} else {
-			fmt.Println(index)
 			fd = fileData[index*minPartSize : (index+1)*minPartSize]
 		}
 		index++
@@ -135,10 +133,8 @@ func VideoPartUpload(accountToken, openID string, uploadID string, fileData []by
 	for {
 		select {
 		case err = <-errorChain:
-			fmt.Println(err.Error())
 			return err
 		case <-done:
-			fmt.Println("完成一块")
 			su++
 			if su == partNum {
 				return nil
@@ -163,7 +159,6 @@ func VideoPartComplete(accountToken, openID string, uploadID string) (*VideoPart
 	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
 	resp := &VideoPartCompleteResponse{}
-	//err := util.Post2Response(fmt.Sprintf("%s&upload_id=%s", buf.String(), uploadID), nil, resp)
 	err := util.Post2Response(buf.String(), nil, resp)
 	if err != nil {
 		return nil, err
@@ -180,7 +175,6 @@ func VideoPart(accountToken, openID string, fileData []byte) (*VideoPartComplete
 		return nil, errors.New(vp.Data.Description)
 	}
 	upID := vp.Data.UploadID
-	fmt.Println(upID)
 	err = VideoPartUpload(accountToken, openID, upID, fileData)
 	if err != nil {
 		return nil, err
