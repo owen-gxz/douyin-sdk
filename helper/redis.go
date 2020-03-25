@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/owen-gxz/douyin-sdk/oauth"
-	"github.com/owen-gxz/douyin-sdk/service"
 	"time"
 )
 
@@ -15,15 +14,15 @@ const (
 )
 
 type RedisAccountTokenService struct {
-	redis     *redis.Client
-	dyService *service.Service
+	redis  *redis.Client
+	config *oauth.Config
 }
 
-func NewRedisService(redisClient *redis.Client, s *service.Service) *RedisAccountTokenService {
-	return &RedisAccountTokenService{redisClient, s}
+func NewRedisService(redisClient *redis.Client, cfg *oauth.Config) *RedisAccountTokenService {
+	return &RedisAccountTokenService{redisClient, cfg}
 }
 
-func (s *RedisAccountTokenService) SaveOpenToken(response oauth.TokenResponse) error {
+func (s *RedisAccountTokenService) SaveToken(response oauth.TokenResponse) error {
 	data, err := json.Marshal(&response)
 	if err != nil {
 		return err
@@ -42,14 +41,14 @@ func (s *RedisAccountTokenService) GetToken(openid string) (token string, err er
 		return "", err
 	}
 	if t.Data.ExpiresIn < time.Now().Unix() {
-		rToken, err := s.dyService.RefreshToken(t.Data.RefreshToken)
+		rToken, err := s.config.RefreshToken(t.Data.RefreshToken)
 		if err != nil {
 			return "", err
 		}
 		if rToken.Data.ErrorCode != 0 {
 			return "", errors.New(rToken.Data.Description)
 		}
-		err = s.SaveOpenToken(rToken.TokenResponse)
+		err = s.SaveToken(rToken.TokenResponse)
 		if err != nil {
 			return "", err
 		}

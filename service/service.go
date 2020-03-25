@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/owen-gxz/douyin-sdk/helper"
 	"github.com/owen-gxz/douyin-sdk/oauth"
 	"github.com/owen-gxz/douyin-sdk/util"
 	"net/url"
@@ -18,6 +19,9 @@ type Service struct {
 	sync.Mutex  // accessToken读取锁
 
 	handlers map[string]WebHookFunc
+
+	// Access Token Server
+	tokenService AccessTokenServer
 }
 
 const (
@@ -31,13 +35,17 @@ type AccessToken struct {
 	ExpiresIn   int64  `json:"expires_in"`
 }
 
-func NewService(conf *oauth.Config) *Service {
+func NewService(conf *oauth.Config, tokenService AccessTokenServer) *Service {
 	s := &Service{
 		Config: conf,
 	}
 	if s.handlers == nil {
 		s.handlers = make(map[string]WebHookFunc)
 	}
+	if tokenService == nil {
+		tokenService = helper.NewGeneral(conf)
+	}
+	s.tokenService = tokenService
 	err := s.getClientToken()
 	if err != nil {
 		fmt.Errorf("getClientToken err: %s", err)
@@ -45,6 +53,7 @@ func NewService(conf *oauth.Config) *Service {
 	return s
 }
 
+// 抖音service token
 func (s Service) ClientToken() string {
 	s.Lock()
 	defer s.Unlock()
@@ -90,4 +99,5 @@ func (s Service) getClientToken() error {
 
 type AccessTokenServer interface {
 	GetToken(openid string) (token string, err error)
+	SaveToken(response oauth.TokenResponse) error
 }
