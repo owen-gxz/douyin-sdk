@@ -252,7 +252,6 @@ func RemoveVideo(accountToken, openID string, itemID string) (*RemoveVideoRespon
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(data))
 	resp := &RemoveVideoResponse{}
 	err = util.Post2Response(buf.String(), bytes.NewReader(data), resp)
 	if err != nil {
