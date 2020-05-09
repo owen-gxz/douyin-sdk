@@ -3,6 +3,7 @@ package helper
 import (
 	"errors"
 	"github.com/owen-gxz/douyin-sdk/oauth"
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,7 @@ var (
 
 // 内存存储
 type General struct {
+	sync.RWMutex
 	Accesses map[string]oauth.TokenResponse
 	config   *oauth.Config
 }
@@ -22,6 +24,8 @@ func NewGeneral(cfg *oauth.Config) *General {
 }
 
 func (g *General) GetToken(openid string) (token string, err error) {
+	g.Lock()
+	defer g.Unlock()
 	t, ok := g.Accesses[getOpenKey(openid)]
 	if !ok {
 		return "", OpenKeyEmpty
@@ -47,6 +51,8 @@ func (g *General) SaveToken(response oauth.TokenResponse) error {
 	if response.Data.OpenID=="" {
 		return OpenIDEmpty
 	}
+	g.Lock()
+	defer g.Unlock()
 	g.Accesses[response.Data.OpenID] = response
 	return nil
 }
