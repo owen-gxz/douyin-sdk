@@ -24,8 +24,8 @@ func NewGeneral(cfg *oauth.Config) *General {
 }
 
 func (g *General) GetToken(openid string) (token string, err error) {
-	g.Lock()
-	defer g.Unlock()
+	g.RLock()
+	defer g.RUnlock()
 	t, ok := g.Accesses[getOpenKey(openid)]
 	if !ok {
 		return "", OpenKeyEmpty
@@ -53,7 +53,7 @@ func (g *General) SaveToken(response oauth.TokenResponse) error {
 	}
 	g.Lock()
 	defer g.Unlock()
-	g.Accesses[response.Data.OpenID] = response
+	g.Accesses[getRedisOpenKey(response.Data.OpenID)] = response
 	return nil
 }
 
