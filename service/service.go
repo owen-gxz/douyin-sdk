@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"github.com/owen-gxz/douyin-sdk/helper"
@@ -114,4 +115,12 @@ func (s *Service) getClientToken() error {
 type AccessTokenServer interface {
 	GetToken(openid string) (token string, err error)
 	SaveToken(response oauth.TokenResponse) error
+}
+
+func (s *Service) WebHookSign(body string) string {
+	buf := bytes.Buffer{}
+	buf.WriteString(s.Config.ClientSecret)
+	buf.WriteString(body)
+	signHas := sha1.Sum([]byte(buf.String()))
+	return fmt.Sprintf("%x", signHas[:])
 }
