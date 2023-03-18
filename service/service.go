@@ -15,7 +15,7 @@ import (
 type Service struct {
 	*oauth.Config
 
-	clientToken *AccessToken
+	clientToken *ClientTokenResp
 	sync.Mutex  // accessToken读取锁
 
 	handlers map[string]WebHookFunc
@@ -54,29 +54,43 @@ func NewService(conf *oauth.Config, tokenService AccessTokenServer) *Service {
 }
 
 // 抖音service token
-func (s Service) ClientToken() string {
+func (s *Service) ClientToken() string {
 	s.Lock()
 	defer s.Unlock()
 	var err error
-	if s.clientToken == nil || s.clientToken.ExpiresIn < time.Now().Unix() {
+	if s.clientToken == nil || s.clientToken.Data.ExpiresIn < time.Now().Unix() {
 		for i := 0; i < 3; i++ {
 			err = s.getClientToken()
 			if err == nil {
 				break
 			}
-			fmt.Errorf("getClientToken[%v] %v", s.ClientKey, err)
+			fmt.Printf("getClientToken[%v] %v", s.ClientKey, err)
 			time.Sleep(time.Second)
 		}
 		if err != nil {
 			return ""
 		}
 	}
-	return s.clientToken.AccessToken
+	return s.clientToken.Data.AccessToken
 }
 
-func (s Service) getClientToken() error {
+const (
+	clientTokenUrl = "https://open.douyin.com/oauth/client_token/"
+)
+
+type ClientTokenResp struct {
+	Data struct {
+		AccessToken string `json:"access_token"`
+		Description string `json:"description"`
+		ErrorCode   int    `json:"error_code"`
+		ExpiresIn   int64  `json:"expires_in,number"`
+	} `json:"data"`
+	Message string `json:"message"`
+}
+
+func (s *Service) getClientToken() error {
 	var buf bytes.Buffer
-	buf.WriteString(s.Endpoint.ClientTokenURL)
+	buf.WriteString(clientTokenUrl)
 	v := url.Values{
 		"grant_type":    {grantTypeClientCredential},
 		"client_key":    {s.ClientKey},
@@ -84,15 +98,15 @@ func (s Service) getClientToken() error {
 	}
 	buf.WriteByte('?')
 	buf.WriteString(v.Encode())
-	resp := &AccessToken{}
+	resp := &ClientTokenResp{}
 	err := util.Get2Response(buf.String(), resp)
 	if err != nil {
 		return err
 	}
-	if resp.ErrorCode != 0 {
-		return errors.New(fmt.Sprintf("error_code:%d ,msg: %s", resp.ErrorCode, resp.Description))
+	if resp.Data.ErrorCode != 0 {
+		return errors.New(fmt.Sprintf("error_code:%d ,msg: %s", resp.Data.ErrorCode, resp.Data.Description))
 	}
-	resp.ExpiresIn = time.Now().Unix() + resp.ExpiresIn - 3
+	resp.Data.ExpiresIn = time.Now().Unix() + resp.Data.ExpiresIn - 3
 	s.clientToken = resp
 	return nil
 }
