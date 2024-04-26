@@ -19,7 +19,7 @@ type Service struct {
 	clientToken *ClientTokenResp
 	sync.Mutex  // accessToken读取锁
 
-	handlers map[string]WebHookFunc
+	//handlers map[string]WebHookFunc
 
 	// Access Token Server
 	tokenService AccessTokenServer
@@ -27,6 +27,7 @@ type Service struct {
 
 const (
 	grantTypeClientCredential = "client_credential"
+	WebhookHeaderSignKey      = "X-Douyin-Signature"
 )
 
 type AccessToken struct {
@@ -40,9 +41,9 @@ func NewService(conf *oauth.Config, tokenService AccessTokenServer) *Service {
 	s := &Service{
 		Config: conf,
 	}
-	if s.handlers == nil {
-		s.handlers = make(map[string]WebHookFunc)
-	}
+	//if s.handlers == nil {
+	//	s.handlers = make(map[string]WebHookFunc)
+	//}
 	if tokenService == nil {
 		tokenService = helper.NewGeneral(conf)
 	}
@@ -107,7 +108,7 @@ func (s *Service) getClientToken() error {
 	if resp.Data.ErrorCode != 0 {
 		return errors.New(fmt.Sprintf("error_code:%d ,msg: %s", resp.Data.ErrorCode, resp.Data.Description))
 	}
-	resp.Data.ExpiresIn = time.Now().Unix() + resp.Data.ExpiresIn - 3
+	resp.Data.ExpiresIn = time.Now().Unix() + resp.Data.ExpiresIn - 200
 	s.clientToken = resp
 	return nil
 }

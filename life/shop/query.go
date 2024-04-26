@@ -8,24 +8,32 @@ import (
 	"strings"
 )
 
+//https://partner.open-douyin.com/docs/resource/zh-CN/dop/develop/openapi/life-service-open-ability/life.capacity/life.capacity.shop/shop.query
+
+// 门店信息查询
+
 const (
 	shopQueryUrl = "https://open.douyin.com/goodlife/v1/shop/poi/query/"
 )
 
+type Poi struct {
+	PoiId     string  `json:"poi_id"`
+	Address   string  `json:"address"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	PoiName   string  `json:"poi_name"`
+}
+
+type PoiModel struct {
+	Poi Poi `json:"poi"`
+}
+
 type QueryResp struct {
 	Data struct {
-		ErrorCode   int    `json:"error_code"`
-		Description string `json:"description"`
-		Total       int    `json:"total"`
-		Pois        []struct {
-			Poi struct {
-				PoiId     string  `json:"poi_id"`
-				Address   string  `json:"address"`
-				Latitude  float64 `json:"latitude"`
-				Longitude float64 `json:"longitude"`
-				PoiName   string  `json:"poi_name"`
-			} `json:"poi"`
-		} `json:"pois"`
+		ErrorCode   int        `json:"error_code"`
+		Description string     `json:"description"`
+		Total       int        `json:"total"`
+		Pois        []PoiModel `json:"pois"`
 	} `json:"data"`
 	Extra struct {
 		ErrorCode      int    `json:"error_code"`
@@ -37,7 +45,6 @@ type QueryResp struct {
 	} `json:"extra"`
 }
 
-// Create 创建代运营订单
 func Query(accountToken string, accountID string, page, size string) (*QueryResp, error) {
 	var buf bytes.Buffer
 	buf.WriteString(shopQueryUrl)

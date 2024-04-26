@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	createPartnerOrderUrl = "https://open.douyin.com/goodlife/v1/partner/order/create/"
-	listPartnerOrderUrl   = "https://open.douyin.com/goodlife/v1/partner/order/query/"
-	infoPartnerOrderUrl   = "https://open.douyin.com/goodlife/v1/partner/order/get/"
+	createPartnerOrderUrl      = "https://open.douyin.com/goodlife/v1/partner/order/create/"
+	listPartnerOrderUrl        = "https://open.douyin.com/goodlife/v1/partner/order/query/"
+	infoPartnerOrderUrl        = "https://open.douyin.com/goodlife/v1/partner/order/get/"
+	commissionProductUrl       = "https://open.douyin.com/goodlife/v1/partner/product_commission/query/"
+	createCommissionProductUrl = "https://open.douyin.com/goodlife/v1/partner/product_commission/save/"
 )
 
 type CreateReq struct {
